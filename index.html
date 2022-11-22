@@ -1,0 +1,853 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>LINEAGE W - 2022.11.04</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="https://unpkg.com/xp.css" />
+    <style>
+        * {
+            -webkit-user-select: none;
+        }
+
+        input {
+            width: 25px;
+            text-align: center;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .toggleSwitch {
+            width: 3rem;
+            height: 1.5rem;
+            display: block;
+            position: relative;
+            border-radius: 2rem;
+            background-color: #fff;
+            box-shadow: 0 0 1rem 3px rgba(0 0 0 / 15%);
+            cursor: pointer;
+        }
+
+        .toggleSwitch .toggleButton {
+            width: 1.3rem;
+            height: 1.3rem;
+            position: absolute;
+            top: 50%;
+            left: .2rem;
+            transform: translateY(-50%);
+            border-radius: 50%;
+            background: gray;
+        }
+
+        .toggleSwitch.active {
+            background: green;
+        }
+
+        .toggleSwitch.active .toggleButton {
+            left: calc(100% - 1.4rem);
+            background: #fff;
+        }
+
+        .toggleSwitch,
+        .toggleButton {
+            transition: all 0.2s ease-in;
+        }
+    </style>
+</head>
+
+<body>
+    <fieldset style="width:400px">
+        <legend>메인</legend>
+        <div class="field-row">
+            <button id="capture" onclick="startCapture()">캡쳐</button>
+            <button id="connect" onclick="connect()">연결</button>
+            <button onclick="test()">테스트</button>
+            <button onclick="blog()">블로그 열기</button>
+        </div>
+
+        <div class="field-row">
+            <span id="hpVal" style="width:75px; padding:3px;text-align: center;">100%</span>
+            <canvas id="hpImg" width="200px" height="6px"></canvas>
+        </div>
+        <div class="field-row">
+            <span id="mpVal" style="width:75px; padding:3px; text-align: center;">100%</span>
+            <canvas id="mpImg" width="200px" height="6px"></canvas>
+        </div>
+        <div class="field-row">
+            <span onclick="toggleRun()">실행하기</span>
+            <span id="run" class="toggleSwitch" onclick="toggleRun()">
+                <span class="toggleButton"></span>
+            </span>
+            <label>&nbsp;&nbsp;&nbsp;</label>
+            <label>&nbsp;&nbsp;&nbsp;</label>
+            <input id="baseCharacter" type="radio" name="character" checked="true">
+            <label for="baseCharacter">기사/군주/요정/법사</label>
+            <label>&nbsp;&nbsp;&nbsp;</label>
+            <input id="suraCharacter" type="radio" name="character">
+            <label for="suraCharacter">수라</label>
+        </div>
+        <hr>
+        <div class="fluid-row">
+            <input type="checkbox" id="homeUse">
+            <label for="homeUse">자동귀환 사용</label>
+            <label>&nbsp;&nbsp;&nbsp;</label>
+            <input type="checkbox" id="homePotionUse">
+            <label for="homePotionUse">물약오링귀환 사용</label>
+            <label>&nbsp;&nbsp;&nbsp;</label>
+            <input type="checkbox" id="pkActionUse">
+            <label for="pkActionUse">전투대응 사용</label>
+            <br><br>
+            <input type="checkbox" id="timer1Use">
+            <label for="timer1Use">타이머-1 사용</label>
+            <label>&nbsp;&nbsp;&nbsp;</label>
+            <input type="checkbox" id="timer2Use">
+            <label for="timer2Use">타이머-2 사용</label>
+            <label>&nbsp;&nbsp;&nbsp;</label>
+            <input type="checkbox" id="timer3Use">
+            <label for="timer3Use">타이머-3 사용</label>
+        </div>
+
+    </fieldset>
+    <fieldset style="width:400px">
+        <legend>설정</legend>
+        <div class="field-row">
+            <section class="tabs">
+                <menu role="tablist" aria-label="Sample Tabs">
+                    <button role="tab" aria-selected="true" aria-controls="tab-A">자동귀환</button>
+                    <button role="tab" aria-controls="tab-B">전투대응</button>
+                    <button role="tab" aria-controls="tab-C">타이머-1</button>
+                    <button role="tab" aria-controls="tab-D">타이머-2</button>
+                    <button role="tab" aria-controls="tab-E">타이머-3</button>
+                </menu>
+                <article role="tabpanel" id="tab-A">
+                    <!-- <div class="field-row">
+                        <input type="checkbox" id="homeUse">
+                        <label for="homeUse">자동귀환 사용</label>
+                        <label>&nbsp;&nbsp;&nbsp;</label>
+                        <input type="checkbox" id="homePotionUse">
+                        <label for="homePotionUse">물약오링귀환 사용</label>
+                    </div>
+                    <hr> -->
+                    <div class="field-row">
+                        <label>사용구간(HP):</label>
+                        <input id="homeHpMin" type="text">
+                        <span>~</span>
+                        <input id="homeHpMax" type="text">
+                        <label>&nbsp;</label>
+                        <label>재사용:</label>
+                        <input id="homeCool" type="text">&nbsp;초
+                    </div>
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="homeKey" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="homeCount" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="homeCountDelay" type="text">&nbsp;초
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-B">
+                    <!-- <div class="field-row">
+                        <input type="checkbox" id="pkActionUse">
+                        <label for="pkActionUse">전투대응 사용</label>
+                    </div>
+                    <hr> -->
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="pkActionKey" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="pkActionCount" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="pkActionCountDelay" type="text">&nbsp;초
+                    </div>
+                    <div class="field-row">
+                        <label>입력대기시간:</label>
+                        <input id="pkActionInputDelay" type="text">
+                        <label>&nbsp;</label>
+                        <label>재사용:</label>
+                        <input id="pkActionCool" type="text">&nbsp;초
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-C">
+                    <!-- <div class="field-row">
+                        <input type="checkbox" id="timer1Use">
+                        <label for="timer1Use">타이머-1 사용</label>
+                    </div>
+                    <hr> -->
+                    <div class="field-row">
+                        <label>사용구간(HP):</label>
+                        <input id="timer1HpMin" type="text">
+                        <span>~</span>
+                        <input id="timer1HpMax" type="text">
+                        <label>&nbsp;</label>
+                        <label>사용구간(MP):</label>
+                        <input id="timer1MpMin" type="text">
+                        <span>~</span>
+                        <input id="timer1MpMax" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="timer1Key" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="timer1Count" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="timer1CountDelay" type="text">&nbsp;초
+                        <label>&nbsp;</label>
+                        <label>재사용:</label>
+                        <input id="timer1Cool" type="text">&nbsp;초
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-D">
+                    <!-- <div class="field-row">
+                        <input type="checkbox" id="timer2Use">
+                        <label for="timer2Use">타이머-2 사용</label>
+                    </div>
+                    <hr> -->
+                    <div class="field-row">
+                        <label>사용구간(HP):</label>
+                        <input id="timer2HpMin" type="text">
+                        <span>~</span>
+                        <input id="timer2HpMax" type="text">
+                        <label>&nbsp;</label>
+                        <label>사용구간(MP):</label>
+                        <input id="timer2MpMin" type="text">
+                        <span>~</span>
+                        <input id="timer2MpMax" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="timer2Key" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="timer2Count" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="timer2CountDelay" type="text">&nbsp;초
+                        <label>&nbsp;</label>
+                        <label>재사용:</label>
+                        <input id="timer2Cool" type="text">&nbsp;초
+                    </div>
+                </article>
+
+                <article role="tabpanel" hidden id="tab-E">
+                    <!-- <div class="field-row">
+                        <input type="checkbox" id="timer3Use">
+                        <label for="timer3Use">타이머-3 사용</label>
+                    </div>
+                    <hr> -->
+                    <div class="field-row">
+                        <label>사용구간(HP):</label>
+                        <input id="timer3HpMin" type="text">
+                        <span>~</span>
+                        <input id="timer3HpMax" type="text">
+                        <label>&nbsp;</label>
+                        <label>사용구간(MP):</label>
+                        <input id="timer3MpMin" type="text">
+                        <span>~</span>
+                        <input id="timer3MpMax" type="text">
+                    </div>
+                    <div class="field-row">
+                        <label>입력키:</label>
+                        <input id="timer3Key" type="text">
+                        <label>&nbsp;</label>
+                        <label>횟수:</label>
+                        <input id="timer3Count" type="text">
+                        <label>&nbsp;</label>
+                        <label>딜레이:</label>
+                        <input id="timer3CountDelay" type="text">&nbsp;초
+                        <label>&nbsp;</label>
+                        <label>재사용:</label>
+                        <input id="timer3Cool" type="text">&nbsp;초
+                    </div>
+                </article>
+            </section>
+        </div>
+    </fieldset>
+    <fieldset style="width:400px">
+        <legend>공지-2022.11.04</legend>
+        <span>HP/MP인식을 위해 수라 캐릭터를 별도 가능하도록 수정했습니다.</span>
+        <span>사용자 인터페이스를 약간 수정했습니다.</span>
+    </fieldset>
+    <div id="details" style="display:none">
+        <video id="video" autoplay></video>
+        <canvas id="hpImg"></canvas>
+        <canvas id="hpImgRed"></canvas>
+        <canvas id="hpImgBlur"></canvas>
+        <canvas id="hpImgThres"></canvas>
+        <canvas id="mpImg"></canvas>
+        <canvas id="mpImgBlue"></canvas>
+    </div>
+</body>
+
+<script>
+    let port, writer, potionTarget, pkTarget;
+    let teleToken, teleId;
+    let teleConnect = false;
+    let running = false;
+    let cvLoad = false;
+    const encoder = new TextEncoder();
+    const video = document.querySelector("#video");
+    const canvas = document.createElement("canvas");
+    const canvasFull = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const ctxFull = canvasFull.getContext("2d");
+
+    
+    const potionEmptyImg = new Image();
+    const pkImg = new Image();
+
+    let userData = {
+        "capHpX": 90,
+        "capHpY": 32,
+        "capHpW": 180,
+        "capHpH": 6,
+        "capMpX": 90,
+        "capMpY": 45,
+        "capMpW": 180,
+        "capMpH": 6,
+
+        "homeUse": false,
+        "homeHpMin": 0,
+        "homeHpMax": 40,
+        "homeKey": "8",
+        "homeCount": 2,
+        "homeCountDelay": 1,
+        "homeCool": 0,
+        "homePotionUse": false,
+        "homePotionThres": 1000000,
+        "homePotionPosX": 472,
+        "homePotionPosY": 635,
+        "homePotionPosW": 13,
+        "homePotionPosH": 13,
+
+        "pkActionUse": false,
+        "pkActionThres": 1000000,
+        "pkActionPosX": 1057,
+        "pkActionPosY": 533,
+        "pkActionPosW": 25,
+        "pkActionPosH": 25,
+        "pkActionKey": "7",
+        "pkActionCount": 2,
+        "pkActionCountDelay": 0.5,
+        "pkActionCool": 5,
+        "pkActionInputDelay": 0,
+
+        "timer1Use": false,
+        "timer1HpMin": 40,
+        "timer1HpMax": 60,
+        "timer1MpMin": 0,
+        "timer1MpMax": 100,
+        "timer1Key": "7",
+        "timer1Count": 1,
+        "timer1CountDelay": 0.5,
+        "timer1Cool": 5,
+
+        "timer2Use": false,
+        "timer2HpMin": 60,
+        "timer2HpMax": 80,
+        "timer2MpMin": 30,
+        "timer2MpMax": 100,
+        "timer2Key": "4",
+        "timer2Count": 1,
+        "timer2CountDelay": 0.5,
+        "timer2Cool": 5,
+
+        "timer3Use": false,
+        "timer3HpMin": 0,
+        "timer3HpMax": 40,
+        "timer3MpMin": 0,
+        "timer3MpMax": 100,
+        "timer3Key": "1",
+        "timer3Count": 1,
+        "timer3CountDelay": 0.5,
+        "timer3Cool": 1
+    }
+
+    const print = (msg) => {
+        let dt = new Date();
+        let hours = dt.getHours() ;
+        let minutes = dt.getMinutes() ;
+        let seconds = dt.getSeconds();
+        let time = ( "00" + new String( hours )).slice( -2 ) + ":" + ( "00" + new String( minutes )).slice( -2 ) + ":" + ( "00" + new String( seconds )).slice( -2 );
+
+        console.log('[' + time + ']', msg);
+    }
+
+    const teleGet = () => {
+        fetch(`https://api.telegram.org/bot${teleToken}/getUpdates`).then(res => {
+            res.json().then(data => {
+                teleId = data.result[0].message.chat.id;
+                print("텔레그램과 연결되었습니다.");
+                teleSend("텔레그램과 연결되었습니다");
+                teleConnect = true;
+            }).catch(err => {
+                print("텔레그램에 연결에 실패했습니다.");
+            });
+        });
+    }
+
+    const makeFile = (canvasEle) => {
+        const blobBin = atob(canvasEle.toDataURL().split(",")[1]);
+        const array = [];
+        for (let i = 0; i < blobBin.length; i++) {
+            array.push(blobBin.charCodeAt(i));
+        }
+        const file = new Blob([new Uint8Array(array)], { type: "image/png" });
+        return file;
+    }
+
+    const teleSendPhoto = (canvasEle, caption) => {
+        const url = `https://api.telegram.org/bot${teleToken}/sendphoto?chat_id=${teleId}`
+        const file = makeFile(canvasEle);
+        const teleData = new FormData();
+        teleData.append("photo", file);
+        teleData.append("caption", caption);
+        fetch(url, {
+            method: "POST",
+            body: teleData
+        });
+    }
+
+    const teleSend = (msg) => {
+        const url = `https://api.telegram.org/bot${teleToken}/sendMessage?chat_id=${teleId}&text=${msg}`;
+        fetch(url);
+    }
+
+    if (localStorage.getItem("userData") == null) {
+        print("웹스토리지에 자료가 없습니다. 현재 데이터를 저장합니다.");
+        localStorage.setItem("userData", JSON.stringify(userData));
+    } else {
+        print("웹스토리지의 데이터를 불러옵니다.");
+        userData = JSON.parse(localStorage.getItem("userData"));
+    }
+
+    if (localStorage.getItem("telegram") == null && localStorage.getItem("donationToken") == null) {
+        print("웹스토리지에 텔레그램 토큰이 없습니다.");
+    } else if (localStorage.getItem("telegram")) {
+        print("웹스토리지에서 텔레그램 토큰을 불러옵니다.");
+        teleToken = localStorage.getItem("telegram");
+        teleGet();
+    } else if (localStorage.getItem("donationToken")) {
+        print("후원자용 토큰을 사용합니다.");
+        teleToken = localStorage.getItem("donationToken");
+        teleId = parseInt(localStorage.getItem("donationId"));
+        teleSend("텔레그램과 연결되었습니다");
+        print("텔레그램과 연결되었습니다.");
+    }
+
+    const inCool = {
+        "home": false,
+        "pkAction": false,
+        "timer1": false,
+        "timer2": false,
+        "timer3": false,
+    }
+
+    document.querySelectorAll("input").forEach(ele => {
+        ele.addEventListener("change", () => {
+            if (ele.id.includes("Use")) {
+                userData[ele.id] = ele.checked;
+            } else if (ele.id.includes("Key")) {
+                userData[ele.id] = ele.value;
+            } else if (ele.id.includes("Delay")) {
+                userData[ele.id] = parseFloat(ele.value);
+            } else if (ele.id.includes("Cool")) {
+                userData[ele.id] = parseFloat(ele.value);
+            } else if (ele.id.includes("suraCharacter")) {
+                userData.capHpY = 37;
+                userData.capMpY = 51;
+            } else if (ele.id.includes("baseCharacter")) {
+                userData.capHpY = 32;
+                userData.capMpY = 45;
+            }
+            else {
+                userData[ele.id] = parseInt(ele.value);
+            }
+            print(`${ele.id}값이 ${userData[ele.id]}으로 변경되었습니다.`);
+            localStorage.setItem("userData", JSON.stringify(userData));
+        });
+    });
+
+    const test = () => {
+        print("입력 테스트를 진행합니다.");
+        print("3초 후, 1초 간격으로 i키을 4회 누릅니다.");
+        for (i = 3; i < 7; i++) {
+            setTimeout(() => send('i'), i * 1000);
+        }
+        setTimeout(() => alert("입력 테스트가 종료되었습니다."), 7000);
+    }
+
+    const updateData = () => {
+        Object.keys(userData).forEach(data => {
+            if (data.includes("Use")) {
+                document.getElementById(data).checked = userData[data];
+            } else if (data.includes("cap") || data.includes("Pos")) {
+                //Nothing
+            }
+            else if (data.includes("Thres")) {
+                //Nothing
+            }
+            else if (data.includes("sura")) {
+                //Nothing
+            }
+            else if (data.includes("Character")) {
+                //Nothing
+            } else {
+                document.getElementById(data).value = userData[data];
+            }
+        });
+    }
+    updateData();
+
+    const blog = () => {
+        window.open("https://mandloh.tistory.com/136");
+    }
+
+    const toggleRun = () => {
+        const ele = document.querySelector(".toggleSwitch");
+        running = !running;
+        if (running) {
+            ele.classList.add("active");
+            print("앱을 실행합니다.");
+        }
+        else {
+            ele.classList.remove("active");
+            print("앱이 중지되었습니다.");
+        }
+    }
+
+    const cvReady = () => {
+        cvLoad = true;
+        print("Opencv ready.");
+        potionEmptyImg.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAAAXNSR0IArs4c6QAAAjdJREFUKFMdkE1LVGEAhZ/3fjj3Xp0740zmlBsx8gPTmHIRFAW1EaMpLapFQYSraNUmSGiRVrZpUwuhQCikiIJq4aIW/YGg2oY05pgbp5zr6NyZ+/G+4Zz94XnOEc8eXFcmCj2OCfw6cayQCqQEwzCw7ASNKES3LaSuEUkQL2YnVRJFolqltPSLQOpUvCpKgpt0SNoGbkeW2HWpJxKsV2uIN9PX1MbSTyzPwxQGxXKVOx8WQSkeX5xgb7IFYYDvtCIzGUq1BuL1zdMqWF3GajQw29r5uuYxs/iZndwrjDKQNsGv0tB1okyWWm4PYq4wrLJBDVuDTWnw3ZM8+vQFUEyNnqLfinAJiQDfTRH19yPmC8MqpwJMTeC3tPHDi5h697Gp9/B8gX1mQFqEhHFM2TAw8ocRrybyyt320DRBYCVZxeHG/AKUVnhy+xY5tUUiqKFpGp5lU+vtQyyM51Vqu4KUMYFps2EkmZyZpb5c5OXcUzq0ADP0mxsrCQu/dwDxfHxEdcoGpgzxlcZaZFAqexi6Rk9nlix1zLhBoGiSoh3SlV5XHd/fTVbWkZrBt3KN+80jYObsGAczFnpUJ7RbWQlC2g/lEZdHulWP69CXdhBCo7gVcvft+2Zp+sI5uswIXUh8yyFKpcgNDSKujh1R0abHxu8iI0ODOJZDHMcoqbASBokWjeKfEnbnbnoODGKnXcSlM8eUkJJ4u8bW33XCyj80GSNjST2KOHryBLu6cphJB63FwLEt/gPkt/XajD1j6gAAAABJRU5ErkJggg=="
+        pkImg.src = "data:image/png;base64,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"
+        setTimeout(() => {
+            potionTarget = cv.imread(potionEmptyImg);
+            pkTarget = cv.imread(pkImg);
+        }, 1000);
+    }
+
+    const startCapture = async () => {
+        if (cvLoad) {
+            video.srcObject = await navigator.mediaDevices.getDisplayMedia({
+                video: { cursor: "always", frameRate: { ideal: 5, max: 5 } },
+                audio: false,
+            });
+            print("캡처를 시작합니다.");
+            setTimeout(captureLoop, 1000);
+        } else {
+            alert("Opencv.js가 로드되지 않았습니다.\n새로고침 후 다시 해보세요.");
+        }
+    }
+
+    const stopCapture = () => {
+        const tracks = video.srcObject.getTracks();
+        tracks.forEach(track => track.stop());
+        video.srcObject = null;
+    }
+
+    const connect = async () => {
+        try {
+            port = await navigator.serial.requestPort();
+            await port.open({ baudRate: 9600 });
+            reader = port.readable.getReader();
+            writer = port.writable.getWriter();
+            print("아두이노가 연결되었습니다.");
+        } catch (err) {
+            console.error("에러: " + err);
+        }
+    }
+
+    const send = (data) => {
+        print("Send: " + data);
+        const dataArrayBuffer = encoder.encode(data);
+        writer.write(dataArrayBuffer);
+    }
+
+
+    const captureLoop = () => {
+        //video 이미지를 1280x720으로 불러오기
+        canvasFull.width = video.videoWidth;
+        canvasFull.height = video.videoHeight;
+        ctxFull.drawImage(video, 0, 0, canvasFull.width, canvasFull.height, 0, 0, 1280, 720);
+
+        //1280x720 이미지에서 HP 부분 잘라오기
+        canvas.width = userData.capHpW;
+        canvas.height = userData.capHpH;
+        ctx.drawImage(canvasFull, userData.capHpX, userData.capHpY, userData.capHpW, userData.capHpH, 0, 0, userData.capHpW, userData.capHpH);
+        const hpImg = cv.imread(canvas);
+        cv.imshow("hpImg", hpImg);
+
+        //HP Red 값만 추출하기
+        const hpImgPlanes = new cv.MatVector();
+        cv.split(hpImg, hpImgPlanes);
+        const hpRed = hpImgPlanes.get(0);
+        cv.imshow("hpImgRed", hpRed);
+
+        //HP 블러 처리하기
+        const hpBlur = new cv.Mat();
+        const ksize = new cv.Size(5, 5);
+        const anchor = new cv.Point(-1, -1)
+        cv.blur(hpRed, hpBlur, ksize, anchor, cv.BORDER_DEFAULT);
+        cv.imshow("hpImgBlur", hpBlur);
+
+        //HP 임계 처리하기
+        const hpThres = new cv.Mat();
+        cv.threshold(hpBlur, hpThres, 210, 255, cv.THRESH_BINARY);
+        cv.imshow("hpImgThres", hpThres);
+
+        //HP 계산하기
+        const hpData1D = [];
+        const hpData2D = [];
+        const hpMaxAry = [];
+
+        //HP cv.Mat 데이터를 JS array로 가져오기
+        hpThres.data.forEach(value => hpData1D.push(value));
+
+        //HP 1차원 데이터를 2차원(x, y)으로 분리하기
+        while (hpData1D.length) hpData2D.push(hpData1D.splice(0, hpThres.size().width));
+
+        //배열을 뒤집어서 255값 찾아 배열에 넣기 (우->좌 방향으로 255값 찾기)
+        for (i = 0; i < hpData2D.length; i++) {
+            // 수정. indexOf에서 값이 검출되지 않으면 -1. Min값을 찾기 때문에 오류 발생하여 수정
+            const idx = hpData2D[i].reverse().indexOf(255);
+            const value = idx < 0 ? hpImg.size().width : idx;
+            hpMaxAry.push(value);
+        }
+
+        //hpMaxAry의 가장 작은값 찾아 HP비율로 계산
+        const hpMinIdx = Math.min.apply(null, hpMaxAry) < 0 ? 0 : Math.min.apply(null, hpMaxAry);
+        const hpRatio_ = Math.round((hpThres.size().width - hpMinIdx) / hpThres.size().width * 100);
+        //22.08.22 추가 - HP가 0인 경우 대부분 오류이므로 100%로 인식하도록 조치.
+        const hpRatio = hpRatio_ == 0 ? 100 : hpRatio_;
+
+        //1280x720 이미지에서 MP 부분 잘라오기
+        canvas.width = userData.capMpW;
+        canvas.height = userData.capMpH;
+        ctx.drawImage(canvasFull, userData.capMpX, userData.capMpY, userData.capMpW, userData.capMpH, 0, 0, userData.capMpW, userData.capMpH);
+        const mpImg = cv.imread(canvas);
+
+        //MP Blue 값만 추출하기
+        const mpLow = new cv.Mat(mpImg.rows, mpImg.cols, mpImg.type(), [60, 110, 125, 0]);
+        const mpHigh = new cv.Mat(mpImg.rows, mpImg.cols, mpImg.type(), [120, 200, 200, 255]);
+        const mpBlue = new cv.Mat();
+        cv.inRange(mpImg, mpLow, mpHigh, mpBlue);
+        cv.imshow("mpImgBlue", mpBlue);
+
+        //MP 계산하기
+        const mpData1D = [];
+        const mpData2D = [];
+        const mpMaxAry = [];
+
+        //MP cv.Mat 데이터를 JS array로 가져오기
+        mpBlue.data.forEach(value => mpData1D.push(value));
+
+        //MP 1차원 데이터를 2차원(x, y)으로 분리하기
+        while (mpData1D.length) mpData2D.push(mpData1D.splice(0, mpBlue.size().width));
+
+        //배열을 뒤집어서 255값 찾아 배열에 넣기 (우->좌 방향으로 255값 찾기)   
+        for (i = 0; i < mpData2D.length; i++) {
+            // fix. indexOf에서 값이 검출되지 않으면 -1. Min값을 찾기 때문에 오류 발생하여 수정
+            const idx = mpData2D[i].reverse().indexOf(255);
+            const value = idx < 0 ? mpImg.size().width : idx;
+            mpMaxAry.push(value);
+        }
+
+        //mpMaxAry의 가장 작은값 찾아 HP비율로 계산
+        const mpMinIdx = Math.min.apply(null, mpMaxAry) < 0 ? 0 : Math.min.apply(null, mpMaxAry);
+        const mpRatio = Math.round((mpBlue.size().width - mpMinIdx) / mpBlue.size().width * 100);
+
+        document.querySelector("#hpVal").innerHTML = `${hpRatio}%`;
+        document.querySelector("#mpVal").innerHTML = `${mpRatio}%`;
+        cv.imshow("mpImg", mpImg);
+
+        // 각종 기능 제어하기
+        if (running) {
+            // Auto home
+            if (userData.homeUse && !inCool.home) {
+                if (hpRatio >= userData.homeHpMin && hpRatio <= userData.homeHpMax) {
+                    print("자동귀환이 실행되었습니다.");
+                    teleSendPhoto(canvasFull, "자동귀환");
+                    for (let i = 0; i < userData.homeCount; i++) {
+                        setTimeout(() => {
+                            send(userData.homeKey);
+                        }, userData.homeCountDelay * i * 1000);
+                    }
+                    if (userData.homeCool > 0) {
+                        inCool.home = true;
+                        print(`${userData.homeCool}초간 자동귀환 쿨타임이 적용됩니다.`);
+                        setTimeout(() => {
+                            inCool.home = false;
+                            print("자동귀환 쿨타임이 해제되었습니다.");
+                        }, userData.homeCool * 1000);
+                    } else {
+                        print("무한반복 귀환을 방지하기 위해 대기상태로 전환합니다.");
+                        toggleRun();
+                    }
+                }
+            }
+
+
+            // Potion home
+            if (userData.homePotionUse) {
+                //1280x720 이미지에서 물약이미지 잘라오기
+                canvas.width = userData.homePotionPosW;
+                canvas.height = userData.homePotionPosH;
+                ctx.drawImage(canvasFull, userData.homePotionPosX, userData.homePotionPosY, userData.homePotionPosW, userData.homePotionPosH, 0, 0, userData.homePotionPosW, userData.homePotionPosH);
+                const potionImg = cv.imread(canvas);
+
+                //물약 이미지 매칭
+                const potionResult = new cv.Mat();
+                const potionMask = new cv.Mat();
+                cv.matchTemplate(potionTarget, potionImg, potionResult, cv.TM_CCOEFF, potionMask);
+                const potionRoc = cv.minMaxLoc(potionResult, potionMask);
+                if (Math.round(potionRoc.maxVal) >= userData.homePotionThres) {
+                    print("물약이 없습니다. 귀환합니다.");
+                    teleSendPhoto(canvasFull, "물약오링 귀환");
+                    for (let i = 0; i < userData.homeCount; i++) {
+                        setTimeout(() => {
+                            send(userData.homeKey);
+                        }, userData.homeCountDelay * i * 1000);
+                    }
+                    toggleRun();
+                    print("대기상태로 전환합니다.");
+                }
+                potionImg.delete();
+                potionResult.delete();
+                potionMask.delete();
+            }
+
+            // PK action
+            if (userData.pkActionUse && !inCool.pkAction) {
+                //1280x720 이미지에서 PK 부분 잘라오기
+                canvas.width = userData.pkActionPosW;
+                canvas.height = userData.pkActionPosH;
+                ctx.drawImage(canvasFull, userData.pkActionPosX, userData.pkActionPosY, userData.pkActionPosW, userData.pkActionPosH, 0, 0, userData.pkActionPosW, userData.pkActionPosH);
+                const pkImg = cv.imread(canvas);
+
+                //PK 이미지 매칭
+                const pkResult = new cv.Mat();
+                const pkMask = new cv.Mat();
+                cv.matchTemplate(pkTarget, pkImg, pkResult, cv.TM_CCOEFF, pkMask);
+                const pkRoc = cv.minMaxLoc(pkResult, pkMask);
+                if (Math.round(pkRoc.maxVal) >= userData.pkActionThres) {
+                    print("전투상황에 대응했습니다.");
+                    teleSendPhoto(canvasFull, "전투대응");
+                    //입력대기 적용
+                    setTimeout(() => {
+                        for (let i = 0; i < userData.pkActionCount; i++) {
+                            setTimeout(() => {
+                                send(userData.pkActionKey);
+                            }, userData.pkActionCountDelay * i * 1000);
+                        }
+                    }, userData.pkActionInputDelay * 1000);
+                    inCool.pkAction = true;
+                    print(`${userData.pkActionCool}초간 전투대응 쿨타임이 적용됩니다.`);
+                    setTimeout(() => {
+                        inCool.pkAction = false;
+                        print("전투대응 쿨타임이 해제되었습니다.");
+                    }, userData.pkActionCool * 1000);
+                }
+                pkImg.delete();
+                pkResult.delete();
+                pkMask.delete();
+            }
+
+            // timer1
+            if (userData.timer1Use && !inCool.timer1) {
+                if (hpRatio >= userData.timer1HpMin && hpRatio <= userData.timer1HpMax && mpRatio >= userData.timer1MpMin && mpRatio <= userData.timer1MpMax) {
+                    print("타이머-1 기능을 사용합니다.");
+                    for (let i = 0; i < userData.timer1Count; i++) {
+                        setTimeout(() => {
+                            send(userData.timer1Key);
+                        }, userData.timer1CountDelay * i * 1000);
+                    }
+                    inCool.timer1 = true;
+                    print(`${userData.timer1Cool}초간 타이머-1 쿨타임이 적용됩니다.`);
+                    setTimeout(() => {
+                        inCool.timer1 = false;
+                        print("타이머-1 쿨타임이 해제되었습니다.");
+                    }, userData.timer1Cool * 1000);
+                }
+            }
+
+            // timer2
+            if (userData.timer2Use && !inCool.timer2) {
+                if (hpRatio >= userData.timer2HpMin && hpRatio <= userData.timer2HpMax && mpRatio >= userData.timer2MpMin && mpRatio <= userData.timer2MpMax) {
+                    print("타이머-2 기능을 사용합니다.");
+                    for (let i = 0; i < userData.timer2Count; i++) {
+                        setTimeout(() => {
+                            send(userData.timer2Key);
+                        }, userData.timer2CountDelay * i * 1000);
+                    }
+                    inCool.timer2 = true;
+                    print(`${userData.timer2Cool}초간 타이머-2 쿨타임이 적용됩니다.`);
+                    setTimeout(() => {
+                        inCool.timer2 = false;
+                        print("타이머-2 쿨타임이 해제되었습니다.");
+                    }, userData.timer2Cool * 1000);
+                }
+            }
+
+            // timer3
+            if (userData.timer3Use && !inCool.timer3) {
+                if (hpRatio >= userData.timer3HpMin && hpRatio <= userData.timer3HpMax && mpRatio >= userData.timer3MpMin && mpRatio <= userData.timer3MpMax) {
+                    print("타이머-3 기능을 사용합니다.");
+                    for (let i = 0; i < userData.timer3Count; i++) {
+                        setTimeout(() => {
+                            send(userData.timer3Key);
+                        }, userData.timer3CountDelay * i * 1000);
+                    }
+                    inCool.timer3 = true;
+                    print(`${userData.timer3Cool}초간 타이머-3 쿨타임이 적용됩니다.`);
+                    setTimeout(() => {
+                        inCool.timer3 = false;
+                        print("타이머-3 쿨타임이 해제되었습니다.");
+                    }, userData.timer3Cool * 1000);
+                }
+            }
+        }
+        hpImg.delete();
+        hpImgPlanes.delete();
+        hpRed.delete();
+        hpBlur.delete();
+        hpThres.delete();
+        mpLow.delete();
+        mpHigh.delete();
+        mpBlue.delete();
+        mpImg.delete();
+        setTimeout(captureLoop, 200);
+    }
+
+    const tabButtons = document.querySelectorAll("[role=tab]");
+    tabButtons.forEach((tabButton) => {
+        tabButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            const tabContainer = e.target.parentElement.parentElement;
+            const targetId = e.target.getAttribute("aria-controls");
+            tabButtons.forEach((_tabButton) =>
+                _tabButton.setAttribute("aria-selected", false)
+            );
+            tabButton.setAttribute("aria-selected", true);
+            tabContainer
+                .querySelectorAll("[role=tabpanel]")
+                .forEach((tabPanel) => tabPanel.setAttribute("hidden", true));
+            tabContainer
+                .querySelector(`[role=tabpanel]#${targetId}`)
+                .removeAttribute("hidden");
+        });
+    });
+
+</script>
+<script async src="https://docs.opencv.org/4.5.5/opencv.js" onload="cvReady()" type="text/javascript"></script>
+
+</html>
